@@ -29,4 +29,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Encrypts both key names and values in localStorage
 - Browser fingerprinting prevents cross-device decryption
 
-[1.0.0]: https://github.com/master-tech-team/-mtt-local-cipher/releases/tag/v1.0.0
+[1.0.0]: https://github.com/master-tech-team/-bantis-local-cipher/releases/tag/v1.0.0

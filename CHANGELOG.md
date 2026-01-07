@@ -1,5 +1,73 @@
 # Changelog
 
+## [2.1.0] - 2026-01-06
+
+### 🔄 Multi-Framework Compatibility (Breaking Change)
+
+#### Breaking Changes
+
+> [!WARNING]
+> **Framework-specific imports required**
+
+**React users must update imports:**
+```typescript
+// Before
+import { useSecureStorage } from '@bantis/local-cipher';
+
+// After
+import { useSecureStorage } from '@bantis/local-cipher/react';
+```
+
+**Angular users must update imports:**
+```typescript
+// Before
+import { SecureStorageService } from '@bantis/local-cipher';
+
+// After
+import { SecureStorageService } from '@bantis/local-cipher/angular';
+```
+
+**Core/Vanilla JS users:** No changes required
+
+#### Why This Change?
+
+v2.0.x bundled all framework code together, causing:
+- ❌ React projects needed Angular dependencies
+- ❌ Dependency resolution errors in Vite/Webpack
+- ❌ 40% larger bundles for non-framework users
+
+#### New Features
+
+- ✅ **Conditional Exports** - Framework-specific entry points
+- ✅ **Smaller Bundles** - 40% reduction for core users (42KB vs 60KB)
+- ✅ **No Dependency Conflicts** - Each framework isolated
+- ✅ **Better Tree-Shaking** - Unused code eliminated
+
+#### Bundle Sizes
+
+| Bundle | Size | Dependencies |
+|--------|------|--------------|
+| Core | 42KB | None |
+| React | 49KB | react |
+| Angular | 55KB | @angular/core, rxjs |
+
+#### Migration Guide
+
+See [README.md](./README.md#migration-from-v20x-to-v210) for detailed migration instructions.
+
+## [2.0.1] - 2026-01-06
+
+### 📚 Professional Documentation
+
+- Added optimized README with problem/solution format
+- Added comprehensive SECURITY.md with threat model
+- Added CONTRIBUTING.md for contributors
+- Added public ROADMAP.md (v1.0 → v3.0)
+- Added examples directory with demos
+- Added blog post and social media content
+- Added 24 SEO-optimized keywords
+- Added MIT LICENSE
+
 ## [2.0.0] - 2026-01-06
 
 ### 🚀 Major Release - Enterprise Features

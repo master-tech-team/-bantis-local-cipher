@@ -124,6 +124,78 @@ function App() {
 }
 ```
 
+## 🚀 Quick Start
+
+### JavaScript Vanilla
+
+```javascript
+import { SecureStorage } from '@bantis/local-cipher';
+
+const storage = SecureStorage.getInstance();
+
+// Store encrypted
+await storage.setItem('accessToken', 'mi-token-secreto');
+
+// Retrieve decrypted
+const token = await storage.getItem('accessToken');
+
+// With expiration (1 hour)
+await storage.setItemWithExpiry('session', sessionData, { expiresIn: 3600000 });
+
+// Remove
+await storage.removeItem('accessToken');
+```
+
+**Before:**
+```
+localStorage: { "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }
+```
+
+**After:**
+```
+localStorage: { "__enc_a7f5d8e2": "Qm9keUVuY3J5cHRlZERhdGE..." }
+```
+
+### React
+
+```jsx
+import { useSecureStorage } from '@bantis/local-cipher/react';
+
+function App() {
+  const [token, setToken, loading] = useSecureStorage('accessToken', '');
+
+  if (loading) return <div>Loading...</div>;
+
+  return (
+    <div>
+      <p>Token: {token}</p>
+      <button onClick={() => setToken('nuevo-token')}>
+        Update Token
+      </button>
+    </div>
+  );
+}
+```
+
+### Angular
+
+```typescript
+import { SecureStorageService } from '@bantis/local-cipher/angular';
+
+@Component({
+  selector: 'app-root',
+  template: `<div>{{ token$ | async }}</div>`
+})
+export class AppComponent {
+  token$ = this.storage.getItem('accessToken');
+
+  constructor(private storage: SecureStorageService) {}
+
+  saveToken(token: string) {
+    this.storage.setItem('accessToken', token).subscribe();
+  }
+}
+```
 ## Angular Integration
 
 ```typescript
@@ -286,29 +358,52 @@ v1 data is automatically migrated to v2 format on first read. No action required
 const storage = SecureStorage.getInstance();  // Works with both
 ```
 
-## Examples
+## Migration from v2.0.x to v2.1.0
 
-See [/examples](./examples) directory for:
-- Basic usage
-- React integration
-- Angular integration
-- Advanced features (TTL, events, namespaces)
+> [!WARNING]
+> **Breaking Change:** Framework-specific imports required
 
-## Contributing
+### For React Users
 
-Contributions welcome! Please read [CONTRIBUTING.md](./CONTRIBUTING.md) first.
+**Before (v2.0.x):**
+```typescript
+import { useSecureStorage } from '@bantis/local-cipher';
+```
 
-## Security Issues
+**After (v2.1.0):**
+```typescript
+import { useSecureStorage } from '@bantis/local-cipher/react';
+```
 
-Report security vulnerabilities to [security@example.com](mailto:security@example.com). See [SECURITY.md](./SECURITY.md) for details.
+### For Angular Users
 
-## License
+**Before (v2.0.x):**
+```typescript
+import { SecureStorageService } from '@bantis/local-cipher';
+```
 
-MIT © MTT - See [LICENSE](./LICENSE) for details.
+**After (v2.1.0):**
+```typescript
+import { SecureStorageService } from '@bantis/local-cipher/angular';
+```
 
-## Links
+### For Core/Vanilla JS Users
 
-- [npm package](https://www.npmjs.com/package/@bantis/local-cipher)
-- [GitHub repository](https://github.com/master-tech-team/-bantis-local-cipher)
-- [Changelog](./CHANGELOG.md)
-- [Security Policy](./SECURITY.md)
+**No changes required:**
+```typescript
+import { SecureStorage } from '@bantis/local-cipher';  // Still works
+```
+
+### Why This Change?
+
+v2.0.x bundled all framework code together, causing dependency conflicts:
+- React projects needed Angular dependencies (`@angular/core`, `rxjs`)
+- Vanilla JS projects loaded unused React/Angular code
+- 40% larger bundle size for non-framework users
+
+v2.1.0 separates frameworks into independent bundles:
+- ✅ Core: 42KB (no framework dependencies)
+- ✅ React: 49KB (core + hooks)
+- ✅ Angular: 55KB (core + service)
+
+## FAQ

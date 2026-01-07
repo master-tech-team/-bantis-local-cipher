@@ -1,12 +1,12 @@
 /**
- * @bantis/local-cipher v2.0.0
- * Librería de cifrado local AES-256-GCM para Angular, React y JavaScript
+ * @bantis/local-cipher - Core Module
+ * Framework-agnostic client-side encryption for browser storage
  * 
- * @author MTT
+ * @version 2.1.0
  * @license MIT
  */
 
-// Core exports
+// Core classes
 export { EncryptionHelper } from './core/EncryptionHelper';
 export { SecureStorage } from './core/SecureStorage';
 export { EventEmitter } from './core/EventEmitter';
@@ -35,20 +35,9 @@ export { Logger } from './utils/logger';
 export { compress, decompress, shouldCompress, isCompressionSupported } from './utils/compression';
 export { debugEncryptionState, forceMigration } from './utils/debug';
 
-// React exports
-export {
-    useSecureStorage,
-    useSecureStorageItem,
-    useSecureStorageDebug,
-    secureStorage as reactSecureStorage,
-} from './integrations/react';
-
-// Angular exports
-export { SecureStorageService } from './integrations/angular';
-
 // Default instance for vanilla JS
 import { SecureStorage } from './core/SecureStorage';
 export const secureStorage = SecureStorage.getInstance();
 
 // Version
-export const VERSION = '2.0.0';
+export const VERSION = '2.1.0';

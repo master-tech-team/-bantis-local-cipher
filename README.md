@@ -1,6 +1,6 @@
-# @mtt/local-cipher
+# @bantis/local-cipher
 
-[![npm version](https://img.shields.io/npm/v/@mtt/local-cipher.svg)](https://www.npmjs.com/package/@mtt/local-cipher)
+[![npm version](https://img.shields.io/npm/v/@bantis/local-cipher.svg)](https://www.npmjs.com/package/@bantis/local-cipher)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub](https://img.shields.io/badge/GitHub-master--tech--team-blue)](https://github.com/master-tech-team/-mtt-local-cipher)
 

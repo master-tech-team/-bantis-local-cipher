@@ -1,22 +1,42 @@
+import type { EncryptionConfig } from '../types';
+import { DEFAULT_CONFIG } from '../types';
+
 /**
  * EncryptionHelper - Clase responsable de todas las operaciones criptográficas
  * Implementa AES-256-GCM con derivación de claves PBKDF2 y fingerprinting del navegador
  */
 export class EncryptionHelper {
-    // Constantes criptográficas
+    // Constantes criptográficas (ahora configurables)
     private static readonly ALGORITHM = 'AES-GCM';
-    private static readonly KEY_LENGTH = 256;
-    private static readonly IV_LENGTH = 12; // 96 bits para GCM
-    private static readonly SALT_LENGTH = 16; // 128 bits
-    private static readonly ITERATIONS = 100000;
     private static readonly HASH_ALGORITHM = 'SHA-256';
     private static readonly SALT_STORAGE_KEY = '__app_salt';
-    private static readonly APP_IDENTIFIER = 'mtt-local-cipher-v1'; // Identificador único de la app
+    private static readonly KEY_VERSION_KEY = '__key_version';
+
+    // Configuración
+    private readonly config: Required<EncryptionConfig>;
 
     // Propiedades privadas
     private key: CryptoKey | null = null;
     private baseKey: string = '';
     private baseKeyPromise: Promise<string> | null = null;
+    private keyVersion: number = 1;
+
+    constructor(config?: EncryptionConfig) {
+        this.config = { ...DEFAULT_CONFIG.encryption, ...config } as Required<EncryptionConfig>;
+
+        // Load key version from storage
+        const storedVersion = localStorage.getItem(EncryptionHelper.KEY_VERSION_KEY);
+        if (storedVersion) {
+            this.keyVersion = parseInt(storedVersion, 10);
+        }
+    }
+
+    /**
+     * Get current key version
+     */
+    public getKeyVersion(): number {
+        return this.keyVersion;
+    }
 
     /**
      * Genera un fingerprint único del navegador
@@ -35,7 +55,7 @@ export class EncryptionHelper {
                 screen.height.toString(),
                 screen.colorDepth.toString(),
                 new Intl.DateTimeFormat().resolvedOptions().timeZone,
-                EncryptionHelper.APP_IDENTIFIER,
+                this.config.appIdentifier,
             ];
 
             const fingerprint = components.join('|');
@@ -82,13 +102,13 @@ export class EncryptionHelper {
             {
                 name: 'PBKDF2',
                 salt,
-                iterations: EncryptionHelper.ITERATIONS,
+                iterations: this.config.iterations,
                 hash: EncryptionHelper.HASH_ALGORITHM,
             },
             keyMaterial,
             {
                 name: EncryptionHelper.ALGORITHM,
-                length: EncryptionHelper.KEY_LENGTH,
+                length: this.config.keyLength,
             },
             false,
             ['encrypt', 'decrypt']
@@ -100,13 +120,17 @@ export class EncryptionHelper {
      */
     public async initialize(): Promise<void> {
         // Generar salt aleatorio
-        const salt = crypto.getRandomValues(new Uint8Array(EncryptionHelper.SALT_LENGTH));
+        const salt = crypto.getRandomValues(new Uint8Array(this.config.saltLength));
 
         // Obtener y hashear el baseKey
         const baseKey = await this.generateBaseKey();
 
         // Derivar la clave
         this.key = await this.deriveKey(baseKey, salt);
+
+        // Increment key version
+        this.keyVersion++;
+        localStorage.setItem(EncryptionHelper.KEY_VERSION_KEY, this.keyVersion.toString());
 
         // Guardar el salt en localStorage
         localStorage.setItem(
@@ -156,7 +180,7 @@ export class EncryptionHelper {
         const data = encoder.encode(plaintext);
 
         // Generar IV aleatorio
-        const iv = crypto.getRandomValues(new Uint8Array(EncryptionHelper.IV_LENGTH));
+        const iv = crypto.getRandomValues(new Uint8Array(this.config.ivLength));
 
         // Encriptar
         const encryptedBuffer = await crypto.subtle.encrypt(
@@ -196,8 +220,8 @@ export class EncryptionHelper {
             const combined = new Uint8Array(this.base64ToArrayBuffer(ciphertext));
 
             // Extraer IV y datos encriptados
-            const iv = combined.slice(0, EncryptionHelper.IV_LENGTH);
-            const encryptedData = combined.slice(EncryptionHelper.IV_LENGTH);
+            const iv = combined.slice(0, this.config.ivLength);
+            const encryptedData = combined.slice(this.config.ivLength);
 
             // Desencriptar
             const decryptedBuffer = await crypto.subtle.decrypt(

@@ -1,5 +1,44 @@
 # Changelog
 
+## [2.0.0] - 2026-01-06
+
+### 🚀 Major Release - Enterprise Features
+
+#### Breaking Changes
+- **Constructor Change**: `SecureStorage.getInstance()` now accepts optional `SecureStorageConfig` parameter
+- **Internal Format**: Data now stored in `StoredValue` wrapper format (automatic migration from v1)
+- **Minimum Requirements**: Requires modern browsers with CompressionStream API for compression features
+
+#### New Features
+- ✨ **Configurable Encryption**: Customize iterations, salt length, IV length, key length (128/192/256 bits)
+- 🎯 **Event System**: Listen to storage events (encrypted, decrypted, deleted, expired, error, etc.)
+- 🗜️ **Data Compression**: Automatic gzip compression for values > 1KB (configurable threshold)
+- ⏰ **Expiration Support**: Set TTL on items with `setItemWithExpiry()` and automatic cleanup
+- 🔐 **Integrity Validation**: SHA-256 checksums for data integrity verification
+- 📦 **Namespaces**: Organize data with isolated namespaces
+- 🔄 **Key Rotation**: Rotate encryption keys with `rotateKeys()` and backup/restore functionality
+- 📊 **Debug Mode**: Comprehensive logging with configurable log levels
+- 🔧 **TypeScript**: Full type definitions for all features
+
+#### Migration from v1
+```typescript
+// v1
+const storage = SecureStorage.getInstance();
+
+// v2 (backward compatible)
+const storage = SecureStorage.getInstance();
+
+// v2 with configuration
+const storage = SecureStorage.getInstance({
+  encryption: { iterations: 150000, keyLength: 256 },
+  compression: true,
+  debug: { enabled: true, logLevel: 'verbose' }
+});
+```
+
+Data migration is automatic and transparent. v1 data will be auto-migrated to v2 format on first read.
+
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),

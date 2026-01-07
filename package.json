@@ -1,6 +1,6 @@
 {
   "name": "@bantis/local-cipher",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Librería de cifrado local AES-256-GCM v2 con configuración personalizable, eventos, compresión, expiración, namespaces y rotación de claves para Angular, React y JavaScript",
   "type": "module",
   "main": "dist/index.js",

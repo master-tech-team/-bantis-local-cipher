@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@mtt/local-cipher.svg)](https://www.npmjs.com/package/@mtt/local-cipher)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub](https://img.shields.io/badge/GitHub-master--tech--team-blue)](https://github.com/master-tech-team/mtt-local-cipher)
+[![GitHub](https://img.shields.io/badge/GitHub-master--tech--team-blue)](https://github.com/master-tech-team/-mtt-local-cipher)
 
 Librería de cifrado local AES-256-GCM para proteger datos sensibles en localStorage. Compatible con **Angular**, **React** y **JavaScript vanilla**.
 

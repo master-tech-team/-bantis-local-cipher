@@ -1,0 +1,72 @@
+{
+  "name": "@mtt/local-cipher",
+  "version": "1.0.0",
+  "description": "Librería de cifrado local AES-256-GCM para Angular, React y JavaScript con derivación de claves PBKDF2 y fingerprinting del navegador",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src --ext .ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "encryption",
+    "aes-256-gcm",
+    "pbkdf2",
+    "localstorage",
+    "security",
+    "crypto",
+    "angular",
+    "react",
+    "typescript",
+    "fingerprinting"
+  ],
+  "author": "MTT",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/master-tech-team/mtt-local-cipher.git"
+  },
+  "homepage": "https://github.com/master-tech-team/mtt-local-cipher#readme",
+  "bugs": {
+    "url": "https://github.com/master-tech-team/mtt-local-cipher/issues"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/jest": "^29.5.11",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "rollup": "^4.9.6",
+    "rollup-plugin-dts": "^6.1.0",
+    "ts-jest": "^29.1.1",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "@angular/core": ">=12.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "@angular/core": {
+      "optional": true
+    }
+  }
+}

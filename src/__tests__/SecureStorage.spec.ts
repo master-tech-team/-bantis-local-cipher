@@ -182,6 +182,7 @@ describe('SecureStorage v2', () => {
 
     describe('Configuration', () => {
         it('should accept custom configuration', () => {
+            storage.destroy(); // Clear instance from beforeEach
             const customStorage = SecureStorage.getInstance({
                 encryption: { iterations: 150000 },
                 storage: { compression: false },

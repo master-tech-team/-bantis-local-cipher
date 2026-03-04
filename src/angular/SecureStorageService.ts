@@ -218,7 +218,7 @@ export class SecureStorageService {
      */
     getObject<T>(key: string): Observable<T | null> {
         return this.getItem(key).pipe(
-            map(value => value ? JSON.parse(value) as T : null),
+            map((value: string | null) => value ? JSON.parse(value) as T : null),
             catchError(() => from([null]))
         );
     }
@@ -248,8 +248,8 @@ export class SecureStorageService {
      */
     onEvent$(eventType: string): Observable<StorageEventData> {
         return this.events$.pipe(
-            map(event => event.type === eventType ? event : null),
-            map(event => event!)
+            map((event: StorageEventData) => event.type === eventType ? event : null),
+            map((event: StorageEventData | null) => event!)
         );
     }
 }

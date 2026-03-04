@@ -20,8 +20,7 @@ export async function compress(data: string): Promise<Uint8Array> {
     }
 
     try {
-        const encoder = new TextEncoder();
-        const stream = new Blob([data]).stream();
+        const stream = new Blob([data as unknown as BlobPart]).stream();
         const compressedStream = stream.pipeThrough(new CompressionStream('gzip'));
         const compressedBlob = await new Response(compressedStream).blob();
         const buffer = await compressedBlob.arrayBuffer();
@@ -44,7 +43,7 @@ export async function decompress(data: Uint8Array): Promise<string> {
     }
 
     try {
-        const stream = new Blob([data]).stream();
+        const stream = new Blob([data as unknown as BlobPart]).stream();
         const decompressedStream = stream.pipeThrough(new DecompressionStream('gzip'));
         const decompressedBlob = await new Response(decompressedStream).blob();
         return await decompressedBlob.text();

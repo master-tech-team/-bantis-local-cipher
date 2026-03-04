@@ -1,4 +1,3 @@
-import type { SecureStorageConfig } from '../types';
 
 /**
  * Namespaced storage for organizing data
@@ -12,18 +11,41 @@ export class NamespacedStorage {
         this.prefix = `__ns_${namespace}__`;
     }
 
+    private async getIndex(): Promise<string[]> {
+        const indexValue = await this.storage.getItem(`${this.prefix}__index__`);
+        return indexValue ? JSON.parse(indexValue) : [];
+    }
+
+    private async saveToIndex(key: string): Promise<void> {
+        const index = await this.getIndex();
+        if (!index.includes(key)) {
+            index.push(key);
+            await this.storage.setItem(`${this.prefix}__index__`, JSON.stringify(index));
+        }
+    }
+
+    private async removeFromIndex(key: string): Promise<void> {
+        const index = await this.getIndex();
+        const newIndex = index.filter(k => k !== key);
+        if (newIndex.length !== index.length) {
+            await this.storage.setItem(`${this.prefix}__index__`, JSON.stringify(newIndex));
+        }
+    }
+
     /**
      * Set item in this namespace
      */
     async setItem(key: string, value: string): Promise<void> {
-        return this.storage.setItem(`${this.prefix}${key}`, value);
+        await this.storage.setItem(`${this.prefix}${key}`, value);
+        await this.saveToIndex(key);
     }
 
     /**
      * Set item with expiry in this namespace
      */
     async setItemWithExpiry(key: string, value: string, options: { expiresIn?: number; expiresAt?: Date }): Promise<void> {
-        return this.storage.setItemWithExpiry(`${this.prefix}${key}`, value, options);
+        await this.storage.setItemWithExpiry(`${this.prefix}${key}`, value, options);
+        await this.saveToIndex(key);
     }
 
     /**
@@ -37,7 +59,8 @@ export class NamespacedStorage {
      * Remove item from this namespace
      */
     async removeItem(key: string): Promise<void> {
-        return this.storage.removeItem(`${this.prefix}${key}`);
+        await this.storage.removeItem(`${this.prefix}${key}`);
+        await this.removeFromIndex(key);
     }
 
     /**
@@ -51,33 +74,17 @@ export class NamespacedStorage {
      * Clear all items in this namespace
      */
     async clearNamespace(): Promise<void> {
-        const keysToRemove: string[] = [];
-
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.includes(this.prefix)) {
-                keysToRemove.push(key.replace(this.prefix, ''));
-            }
-        }
-
+        const keysToRemove = await this.getIndex();
         for (const key of keysToRemove) {
-            await this.removeItem(key);
+            await this.storage.removeItem(`${this.prefix}${key}`);
         }
+        await this.storage.removeItem(`${this.prefix}__index__`);
     }
 
     /**
      * Get all keys in this namespace
      */
     async keys(): Promise<string[]> {
-        const keys: string[] = [];
-
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.includes(this.prefix)) {
-                keys.push(key.replace(this.prefix, ''));
-            }
-        }
-
-        return keys;
+        return this.getIndex();
     }
 }

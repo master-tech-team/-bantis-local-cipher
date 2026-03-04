@@ -99,7 +99,7 @@ export class SecureStorage {
             if (shouldCompressData) {
                 this.logger.debug(`Compressing value for key: ${key}`);
                 const compressedData = await compress(value);
-                processedValue = this.encryptionHelper['arrayBufferToBase64'](compressedData.buffer);
+                processedValue = this.encryptionHelper['arrayBufferToBase64'](compressedData.buffer as ArrayBuffer);
                 compressed = true;
                 this.eventEmitter.emit('compressed', { key });
             }
@@ -163,7 +163,7 @@ export class SecureStorage {
             if (shouldCompressData) {
                 this.logger.debug(`Compressing value for key: ${key}`);
                 const compressedData = await compress(value);
-                processedValue = this.encryptionHelper['arrayBufferToBase64'](compressedData.buffer);
+                processedValue = this.encryptionHelper['arrayBufferToBase64'](compressedData.buffer as ArrayBuffer);
                 compressed = true;
                 this.eventEmitter.emit('compressed', { key });
             }
@@ -583,5 +583,6 @@ export class SecureStorage {
         }
         this.removeAllListeners();
         this.logger.info('SecureStorage destroyed');
+        SecureStorage.instance = null;
     }
 }

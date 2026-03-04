@@ -1,8 +1,10 @@
 // Setup for Jest tests
 import { webcrypto } from 'crypto';
+import { TextEncoder, TextDecoder } from 'util';
 
+Object.assign(global, { TextDecoder, TextEncoder });
 // Mock Web Crypto API for Node.js environment
-if (typeof globalThis.crypto === 'undefined') {
+if (typeof globalThis.crypto === 'undefined' || typeof globalThis.crypto.subtle === 'undefined') {
     Object.defineProperty(globalThis, 'crypto', {
         value: {
             subtle: webcrypto.subtle,

@@ -101,7 +101,7 @@ export class EncryptionHelper {
         return crypto.subtle.deriveKey(
             {
                 name: 'PBKDF2',
-                salt,
+                salt: salt as any,
                 iterations: this.config.iterations,
                 hash: EncryptionHelper.HASH_ALGORITHM,
             },

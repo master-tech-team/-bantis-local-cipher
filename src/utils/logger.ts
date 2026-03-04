@@ -28,7 +28,7 @@ export class Logger {
         return Logger.LOG_LEVELS[level] <= Logger.LOG_LEVELS[this.logLevel];
     }
 
-    private formatMessage(level: string, message: string, ...args: any[]): string {
+    private formatMessage(level: string, message: string): string {
         const timestamp = new Date().toISOString();
         return `[${this.prefix}] [${level.toUpperCase()}] ${timestamp} - ${message}`;
     }

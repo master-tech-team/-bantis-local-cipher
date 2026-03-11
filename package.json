@@ -1,6 +1,6 @@
 {
   "name": "@bantis/local-cipher",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Client-side encryption for localStorage - Framework-agnostic with React and Angular support",
   "type": "module",
   "main": "./dist/index.js",

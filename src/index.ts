@@ -12,6 +12,7 @@ export { SecureStorage } from './core/SecureStorage';
 export { EventEmitter } from './core/EventEmitter';
 export { KeyRotation } from './core/KeyRotation';
 export { NamespacedStorage } from './core/NamespacedStorage';
+export { SecureCookie } from './core/SecureCookie';
 
 // Type exports
 export type {
@@ -27,6 +28,8 @@ export type {
     StorageEventData,
     EventListener,
     LogLevel,
+    CookieOptions,
+    SecureCookieConfig,
 } from './types';
 export { DEFAULT_CONFIG, LIBRARY_VERSION, STORAGE_VERSION } from './types';
 
@@ -37,7 +40,9 @@ export { debugEncryptionState, forceMigration } from './utils/debug';
 
 // Default instance for vanilla JS
 import { SecureStorage } from './core/SecureStorage';
+import { SecureCookie } from './core/SecureCookie';
 export const secureStorage = SecureStorage.getInstance();
+export const secureCookie = SecureCookie.getInstance();
 
 // Version
-export const VERSION = '2.1.0';
+export const VERSION = '2.2.0';

@@ -21,6 +21,9 @@ export class EncryptionHelper {
     private baseKeyPromise: Promise<string> | null = null;
     private keyVersion: number = 1;
 
+    // Cache para optimización de rendimiento
+    private keyNameCache: Map<string, string> = new Map();
+
     constructor(config?: EncryptionConfig) {
         this.config = { ...DEFAULT_CONFIG.encryption, ...config } as Required<EncryptionConfig>;
 
@@ -247,10 +250,18 @@ export class EncryptionHelper {
      * @returns Nombre encriptado con prefijo __enc_
      */
     public async encryptKey(keyName: string): Promise<string> {
+        // Optimización: devolver desde cache si existe
+        if (this.keyNameCache.has(keyName)) {
+            return this.keyNameCache.get(keyName)!;
+        }
+
         const baseKey = await this.generateBaseKey();
         const combined = keyName + baseKey;
         const hash = await this.hashString(combined);
-        return `__enc_${hash.substring(0, 16)}`;
+        const encryptedKey = `__enc_${hash.substring(0, 16)}`;
+        
+        this.keyNameCache.set(keyName, encryptedKey);
+        return encryptedKey;
     }
 
     /**
@@ -273,10 +284,11 @@ export class EncryptionHelper {
         // Eliminar salt
         localStorage.removeItem(EncryptionHelper.SALT_STORAGE_KEY);
 
-        // Resetear clave en memoria
+        // Resetear clave en memoria y cache
         this.key = null;
         this.baseKey = '';
         this.baseKeyPromise = null;
+        this.keyNameCache.clear();
     }
 
     /**

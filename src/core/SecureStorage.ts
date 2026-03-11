@@ -26,6 +26,7 @@ export class SecureStorage {
     private logger: Logger;
     private config: Required<SecureStorageConfig>;
     private cleanupInterval: NodeJS.Timeout | null = null;
+    private memoryCache: Map<string, { value: string; expiresAt?: number }> = new Map();
 
     private constructor(config?: SecureStorageConfig) {
         // Merge config with defaults
@@ -130,6 +131,11 @@ export class SecureStorage {
             // Store in localStorage
             localStorage.setItem(encryptedKey, encryptedValue);
 
+            // Update cache
+            if (this.config.storage.enableCache) {
+                this.memoryCache.set(key, { value });
+            }
+
             this.logger.verbose(`Stored key: ${key}, compressed: ${compressed}, size: ${encryptedValue.length}`);
             this.eventEmitter.emit('encrypted', { key, metadata: { compressed, size: encryptedValue.length } });
             this.logger.timeEnd(`setItem:${key}`);
@@ -203,6 +209,11 @@ export class SecureStorage {
             // Store in localStorage
             localStorage.setItem(encryptedKey, encryptedValue);
 
+            // Update cache
+            if (this.config.storage.enableCache) {
+                this.memoryCache.set(key, { value, expiresAt });
+            }
+
             this.logger.verbose(`Stored key with expiry: ${key}, expiresAt: ${expiresAt}`);
             this.eventEmitter.emit('encrypted', { key, metadata: { compressed, expiresAt } });
             this.logger.timeEnd(`setItemWithExpiry:${key}`);
@@ -224,6 +235,22 @@ export class SecureStorage {
         }
 
         try {
+            // Check memory cache first
+            if (this.config.storage.enableCache && this.memoryCache.has(key)) {
+                const cached = this.memoryCache.get(key)!;
+                if (cached.expiresAt && cached.expiresAt < Date.now()) {
+                    this.logger.info(`Key expired in cache: ${key}`);
+                    await this.removeItem(key);
+                    this.eventEmitter.emit('expired', { key });
+                    this.logger.timeEnd(`getItem:${key}`);
+                    return null;
+                }
+                this.logger.debug(`Retrieved from cache: ${key}`);
+                this.eventEmitter.emit('decrypted', { key });
+                this.logger.timeEnd(`getItem:${key}`);
+                return cached.value;
+            }
+
             // Encrypt the key
             const encryptedKey = await this.encryptionHelper.encryptKey(key);
 
@@ -272,8 +299,8 @@ export class SecureStorage {
                 return null;
             }
 
-            // Verify integrity if checksum exists
-            if (storedValue.checksum) {
+            // Verify integrity if checksum exists and configured
+            if (storedValue.checksum && this.config.storage.verifyIntegrityOnRead) {
                 const calculatedChecksum = await this.calculateChecksum(storedValue.value);
                 if (calculatedChecksum !== storedValue.checksum) {
                     this.logger.warn(`Integrity check failed for key: ${key}`);
@@ -291,6 +318,10 @@ export class SecureStorage {
                 const compressedData = this.encryptionHelper['base64ToArrayBuffer'](storedValue.value);
                 finalValue = await decompress(new Uint8Array(compressedData));
                 this.eventEmitter.emit('decompressed', { key });
+            }
+
+            if (this.config.storage.enableCache) {
+                this.memoryCache.set(key, { value: finalValue, expiresAt: storedValue.expiresAt });
             }
 
             this.eventEmitter.emit('decrypted', { key });
@@ -319,6 +350,7 @@ export class SecureStorage {
             const encryptedKey = await this.encryptionHelper.encryptKey(key);
             localStorage.removeItem(encryptedKey);
             localStorage.removeItem(key); // Remove both versions
+            this.memoryCache.delete(key);
             this.eventEmitter.emit('deleted', { key });
             this.logger.info(`Removed key: ${key}`);
         } catch (error) {
@@ -340,6 +372,7 @@ export class SecureStorage {
      */
     public clear(): void {
         this.encryptionHelper.clearEncryptedData();
+        this.memoryCache.clear();
         this.eventEmitter.emit('cleared', {});
         this.logger.info('All encrypted data cleared');
     }
@@ -369,6 +402,14 @@ export class SecureStorage {
 
                 if (storedValue.expiresAt && storedValue.expiresAt < Date.now()) {
                     localStorage.removeItem(encryptedKey);
+                    
+                    // Encontrar la clave original en el cache y eliminarla
+                    for (const [cacheKey] of Array.from(this.memoryCache.entries())) {
+                        this.encryptionHelper.encryptKey(cacheKey).then(enc => {
+                            if (enc === encryptedKey) this.memoryCache.delete(cacheKey);
+                        });
+                    }
+
                     cleanedCount++;
                     this.eventEmitter.emit('expired', { key: encryptedKey });
                 }

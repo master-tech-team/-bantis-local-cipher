@@ -30,6 +30,10 @@ export interface StorageConfig {
     autoCleanup?: boolean;
     /** Auto cleanup interval in ms (default: 60000 - 1 minute) */
     cleanupInterval?: number;
+    /** Enable in-memory caching for faster reads (default: true) */
+    enableCache?: boolean;
+    /** Verify data integrity with SHA-256 on every read (default: false to improve performance) */
+    verifyIntegrityOnRead?: boolean;
 }
 
 /**
@@ -57,6 +61,38 @@ export interface SecureStorageConfig {
     encryption?: EncryptionConfig;
     /** Storage configuration */
     storage?: StorageConfig;
+    /** Debug configuration */
+    debug?: DebugConfig;
+}
+
+/**
+ * Cookie configuration options
+ */
+export interface CookieOptions {
+    /** Expiration date for the cookie */
+    expires?: Date;
+    /** Max age in seconds */
+    maxAge?: number;
+    /** Domain for the cookie (e.g. '.example.com' for subdomains) */
+    domain?: string;
+    /** Path for the cookie (default: '/') */
+    path?: string;
+    /** Whether the cookie is secure (HTTPS only) */
+    secure?: boolean;
+    /** SameSite attribute ('strict' | 'lax' | 'none') */
+    sameSite?: 'strict' | 'lax' | 'none';
+}
+
+/**
+ * Complete configuration for SecureCookie
+ */
+export interface SecureCookieConfig {
+    /** Encryption configuration */
+    encryption?: EncryptionConfig;
+    /** Base cookie options applied to all cookies */
+    cookieOptions?: CookieOptions;
+    /** Enable compression for cookie values (default: true) */
+    compression?: boolean;
     /** Debug configuration */
     debug?: DebugConfig;
 }
@@ -177,6 +213,8 @@ export const DEFAULT_CONFIG: Required<SecureStorageConfig> = {
         compressionThreshold: 1024,
         autoCleanup: true,
         cleanupInterval: 60000,
+        enableCache: true,
+        verifyIntegrityOnRead: false,
     },
     debug: {
         enabled: false,

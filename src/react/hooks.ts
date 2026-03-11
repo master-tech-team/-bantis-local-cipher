@@ -235,3 +235,44 @@ export function useNamespace(namespace: string, storage?: SecureStorage) {
  * Exportar la instancia de SecureStorage para uso directo
  */
 export const secureStorage = getDefaultStorage();
+
+/**
+ * Interface genérica para managers de almacenamiento asíncrono
+ */
+interface AsyncStorageManager {
+    get<T>(key: string): Promise<T | null>;
+    set<T>(key: string, value: T): Promise<void>;
+}
+
+import { localStore } from '../managers';
+
+/**
+ * Hook para sincronizar el estado de React con el Storage Manager (por defecto localStore en texto plano)
+ */
+export function useLocalStore<T>(
+    key: string,
+    initialValue: T,
+    storageManager: AsyncStorageManager = localStore
+): [T, (newValue: T) => Promise<void>] {
+    const [value, setValue] = useState<T>(initialValue);
+
+    useEffect(() => {
+        let mounted = true;
+        storageManager.get<T>(key).then((saved) => {
+            if (!mounted) return;
+            if (saved !== null) {
+                setValue(saved);
+            } else {
+                storageManager.set(key, initialValue);
+            }
+        });
+        return () => { mounted = false; };
+    }, [key, storageManager]);
+
+    const setNewValue = useCallback(async (newValue: T) => {
+        setValue(newValue);
+        await storageManager.set(key, newValue);
+    }, [key, storageManager]);
+
+    return [value, setNewValue];
+}

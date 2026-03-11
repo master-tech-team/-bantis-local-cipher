@@ -38,6 +38,9 @@ export { Logger } from './utils/logger';
 export { compress, decompress, shouldCompress, isCompressionSupported } from './utils/compression';
 export { debugEncryptionState, forceMigration } from './utils/debug';
 
+// Manager exports
+export * from './managers';
+
 // Default instance for vanilla JS
 import { SecureStorage } from './core/SecureStorage';
 import { SecureCookie } from './core/SecureCookie';

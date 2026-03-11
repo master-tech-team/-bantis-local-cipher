@@ -16,7 +16,7 @@ export {
     useSecureStorageItem,
     useSecureStorageWithExpiry,
     useSecureStorageEvents,
-    useNamespace,
     useSecureStorageDebug,
     secureStorage as reactSecureStorage,
+    useLocalStore,
 } from './react/hooks';

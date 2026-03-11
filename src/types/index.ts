@@ -34,6 +34,8 @@ export interface StorageConfig {
     enableCache?: boolean;
     /** Verify data integrity with SHA-256 on every read (default: false to improve performance) */
     verifyIntegrityOnRead?: boolean;
+    /** Storage engine to use: localStorage or sessionStorage (default: localStorage) */
+    storageEngine?: Storage;
 }
 
 /**
@@ -215,6 +217,7 @@ export const DEFAULT_CONFIG: Required<SecureStorageConfig> = {
         cleanupInterval: 60000,
         enableCache: true,
         verifyIntegrityOnRead: false,
+        storageEngine: typeof window !== 'undefined' ? window.localStorage : ({} as Storage),
     },
     debug: {
         enabled: false,

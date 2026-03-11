@@ -128,8 +128,8 @@ export class SecureStorage {
             // Encrypt the value
             const encryptedValue = await this.encryptionHelper.encrypt(serialized);
 
-            // Store in localStorage
-            localStorage.setItem(encryptedKey, encryptedValue);
+            // Store in storage
+            this.config.storage.storageEngine!.setItem(encryptedKey, encryptedValue);
 
             // Update cache
             if (this.config.storage.enableCache) {
@@ -142,7 +142,7 @@ export class SecureStorage {
         } catch (error) {
             this.logger.error(`Error al guardar dato encriptado para ${key}:`, error);
             this.eventEmitter.emit('error', { key, error: error as Error });
-            localStorage.setItem(key, value);
+            this.config.storage.storageEngine!.setItem(key, value);
         }
     }
 
@@ -206,8 +206,8 @@ export class SecureStorage {
             // Encrypt the value
             const encryptedValue = await this.encryptionHelper.encrypt(serialized);
 
-            // Store in localStorage
-            localStorage.setItem(encryptedKey, encryptedValue);
+            // Store in storage
+            this.config.storage.storageEngine!.setItem(encryptedKey, encryptedValue);
 
             // Update cache
             if (this.config.storage.enableCache) {
@@ -231,7 +231,7 @@ export class SecureStorage {
         this.logger.time(`getItem:${key}`);
 
         if (!EncryptionHelper.isSupported()) {
-            return localStorage.getItem(key);
+            return this.config.storage.storageEngine!.getItem(key);
         }
 
         try {
@@ -255,11 +255,11 @@ export class SecureStorage {
             const encryptedKey = await this.encryptionHelper.encryptKey(key);
 
             // Get encrypted value
-            let encryptedValue = localStorage.getItem(encryptedKey);
+            let encryptedValue = this.config.storage.storageEngine!.getItem(encryptedKey);
 
             // Backward compatibility: try with plain key
             if (!encryptedValue) {
-                encryptedValue = localStorage.getItem(key);
+                encryptedValue = this.config.storage.storageEngine!.getItem(key);
                 if (!encryptedValue) {
                     this.logger.timeEnd(`getItem:${key}`);
                     return null;
@@ -331,7 +331,7 @@ export class SecureStorage {
             this.logger.error(`Error al recuperar dato encriptado para ${key}:`, error);
             this.eventEmitter.emit('error', { key, error: error as Error });
             // Fallback: try plain key
-            const fallback = localStorage.getItem(key);
+            const fallback = this.config.storage.storageEngine!.getItem(key);
             this.logger.timeEnd(`getItem:${key}`);
             return fallback;
         }
@@ -342,20 +342,20 @@ export class SecureStorage {
      */
     public async removeItem(key: string): Promise<void> {
         if (!EncryptionHelper.isSupported()) {
-            localStorage.removeItem(key);
+            this.config.storage.storageEngine!.removeItem(key);
             return;
         }
 
         try {
             const encryptedKey = await this.encryptionHelper.encryptKey(key);
-            localStorage.removeItem(encryptedKey);
-            localStorage.removeItem(key); // Remove both versions
+            this.config.storage.storageEngine!.removeItem(encryptedKey);
+            this.config.storage.storageEngine!.removeItem(key); // Remove both versions
             this.memoryCache.delete(key);
             this.eventEmitter.emit('deleted', { key });
             this.logger.info(`Removed key: ${key}`);
         } catch (error) {
             this.logger.error(`Error al eliminar dato para ${key}:`, error);
-            localStorage.removeItem(key);
+            this.config.storage.storageEngine!.removeItem(key);
         }
     }
 
@@ -385,8 +385,8 @@ export class SecureStorage {
         let cleanedCount = 0;
 
         const keysToCheck: string[] = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
+        for (let i = 0; i < this.config.storage.storageEngine!.length; i++) {
+            const key = this.config.storage.storageEngine!.key(i);
             if (key && key.startsWith('__enc_')) {
                 keysToCheck.push(key);
             }
@@ -394,14 +394,14 @@ export class SecureStorage {
 
         for (const encryptedKey of keysToCheck) {
             try {
-                const encryptedValue = localStorage.getItem(encryptedKey);
+                const encryptedValue = this.config.storage.storageEngine!.getItem(encryptedKey);
                 if (!encryptedValue) continue;
 
                 const decrypted = await this.encryptionHelper.decrypt(encryptedValue);
                 const storedValue: StoredValue = JSON.parse(decrypted);
 
                 if (storedValue.expiresAt && storedValue.expiresAt < Date.now()) {
-                    localStorage.removeItem(encryptedKey);
+                    this.config.storage.storageEngine!.removeItem(encryptedKey);
                     
                     // Encontrar la clave original en el cache y eliminarla
                     for (const [cacheKey] of Array.from(this.memoryCache.entries())) {
@@ -428,7 +428,7 @@ export class SecureStorage {
     public async verifyIntegrity(key: string): Promise<boolean> {
         try {
             const encryptedKey = await this.encryptionHelper.encryptKey(key);
-            const encryptedValue = localStorage.getItem(encryptedKey);
+            const encryptedValue = this.config.storage.storageEngine!.getItem(encryptedKey);
 
             if (!encryptedValue) return false;
 
@@ -454,7 +454,7 @@ export class SecureStorage {
     public async getIntegrityInfo(key: string): Promise<IntegrityInfo | null> {
         try {
             const encryptedKey = await this.encryptionHelper.encryptKey(key);
-            const encryptedValue = localStorage.getItem(encryptedKey);
+            const encryptedValue = this.config.storage.storageEngine!.getItem(encryptedKey);
 
             if (!encryptedValue) return null;
 
@@ -550,7 +550,7 @@ export class SecureStorage {
 
         for (const key of keys) {
             try {
-                const value = localStorage.getItem(key);
+                const value = this.config.storage.storageEngine!.getItem(key);
                 if (value === null) continue;
 
                 // Try to decrypt to check if already encrypted
@@ -563,7 +563,7 @@ export class SecureStorage {
                 }
 
                 await this.setItem(key, value);
-                localStorage.removeItem(key);
+                this.config.storage.storageEngine!.removeItem(key);
                 this.logger.info(`✓ ${key} migrado exitosamente`);
             } catch (error) {
                 this.logger.error(`✗ Error al migrar ${key}:`, error);
@@ -584,8 +584,8 @@ export class SecureStorage {
         config: Required<SecureStorageConfig>;
     } {
         const allKeys: string[] = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
+        for (let i = 0; i < this.config.storage.storageEngine!.length; i++) {
+            const key = this.config.storage.storageEngine!.key(i);
             if (key) allKeys.push(key);
         }
 

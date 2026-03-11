@@ -1,7 +1,90 @@
 # @bantis/local-cipher
+<p align="center">
+    <a href="https://badge.fury.io/js/@bantis%2Flocal-cipher"><img src="https://badge.fury.io/js/@bantis%2Flocal-cipher.svg" alt="npm version"></a>
+    <img src="https://img.shields.io/npm/dm/@bantis/local-cipher.svg" alt="npm downloads">
+    <img src="https://img.shields.io/bundlephobia/minzip/@bantis/local-cipher.svg" alt="bundle size">
+    <img src="https://img.shields.io/npm/l/@bantis/local-cipher.svg" alt="license">
+</p>
 
-[![npm version](https://img.shields.io/npm/v/@bantis/local-cipher.svg)](https://www.npmjs.com/package/@bantis/local-cipher)
-[![npm downloads](https://img.shields.io/npm/dm/@bantis/local-cipher.svg)](https://www.npmjs.com/package/@bantis/local-cipher)
+## Storage Manager & Cookies Update (v2.2.0+) 🚀
+
+`@bantis/local-cipher` now includes powerful built-in managers for `sessionStorage`, `localStorage`, and `Cookies`. It acts as a comprehensive manager that supports Plaintext (unencrypted) or Encrypted storage modes instantly out of the box.
+
+### Quick Unencrypted Storage
+
+```typescript
+import { localStore, sessionStore, cookies } from '@bantis/local-cipher';
+
+// Local / Session Storage
+await localStore.set('myKey', { user: 'admin' });
+const user = await localStore.get('myKey');
+localStore.remove('myKey');
+
+// Easy cookies with domain and expiration options
+await cookies.set('tracker', 'tracker123', { expires: new Date(Date.now() + 86400000) }); 
+```
+
+### Encrypted Managers Setup
+
+If you need encryption, instantiate the managers with your secret key. The wrapper ensures identical APIs but powered by Web Crypto API.
+
+```typescript
+import { createEncryptedStorage, createEncryptedCookieManager } from '@bantis/local-cipher';
+
+const secureStore = createEncryptedStorage('sessionStorage', 'super-secret-key');
+await secureStore.set('authToken', 'ey...');
+
+const secureCookies = createEncryptedCookieManager('super-secret-key', '.yourdomain.com');
+await secureCookies.set('session_id', 'hash-value', {
+    domain: '.yourdomain.com', // Shareable across subdomains!
+    expires: 30
+});
+```
+
+---
+
+## React & Angular Integrations
+
+We provide first-class support for modern frontend frameworks. 
+
+### React 
+
+```typescript
+import { useLocalStore } from '@bantis/local-cipher/react';
+
+function MyComponent() {
+  // Syncs seamlessly with localStorage
+  const [theme, setTheme] = useLocalStore('theme', 'dark');
+
+  return <button onClick={() => setTheme('light')}>Set Light</button>;
+}
+```
+
+### Angular
+
+```typescript
+import { StorageService } from '@bantis/local-cipher/angular';
+
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  constructor(private storage: StorageService) {}
+
+  async saveToken(token: string) {
+     // Use plain...
+     await this.storage.local.set('token', token);
+     
+     // Or create encrypted cookie!
+     const secureCookie = this.storage.createEncryptedCookieManager('secret');
+     // Set cookie token!
+  }
+}
+```
+
+---
+
+## Advanced Usage & Manual Configuration 🛠️
+
+For complete control over storage limits, compression, and encryption events, you can manually instantiate `SecureStorage` as shown below.
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
 

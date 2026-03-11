@@ -11,3 +11,4 @@ export * from './index';
 
 // Angular-specific exports
 export { SecureStorageService } from './angular/SecureStorageService';
+export { StorageService } from './angular/StorageService';
